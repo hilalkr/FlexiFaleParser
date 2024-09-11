@@ -37,3 +37,6 @@ The project uses the following key dependencies:
 - **next-connect**: Middleware and routing handler for Next.js API routes.
 - **express**: Web framework for handling API routes.
 - **cors**: Middleware for enabling Cross-Origin Resource Sharing (CORS) in Express.
+
+
+npm install xlsx pdf-parse

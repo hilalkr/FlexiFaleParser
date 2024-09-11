@@ -1,3 +1,27 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+
+.custom-file-upload {
+    display: inline-block;
+    padding: 10px 15px;
+    cursor: pointer;
+    background-color: #4CAF50; /* Green background */
+    color: white; /* White text */
+    border-radius: 6px; /* Rounded corners */
+    font-size: 14px;
+    border: 2px solid #ccc;
+    font-weight: bold; /* Bold text */
+    margin-bottom: 10px; /* Space between the file upload button and other elements */
+  }
+  
+  .custom-file-upload:hover {
+    background-color: #45a049; /* Slightly darker green on hover */
+  }
+  
+  .custom-file-upload input[type="file"] {
+    display: none; /* Hide the actual file input */
+  }
+  
+  

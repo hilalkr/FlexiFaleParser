@@ -11,11 +11,13 @@ const FileUpload = ({ onFileSelect }) => {
 
   return (
     <div className="file-upload">
-      <input 
-        type="file" 
-        onChange={handleFileChange} 
-        className="border p-2" 
-      />
+      <label className="custom-file-upload">
+        <input 
+          type="file" 
+          onChange={handleFileChange} 
+        />
+        Choose File
+      </label>
       {selectedFile && <p className="mt-2">Selected File: {selectedFile.name}</p>}
     </div>
   );
