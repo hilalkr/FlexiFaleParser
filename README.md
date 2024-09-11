@@ -1,3 +1,4 @@
+
 # FlexiFileParser
 
 **FlexiFileParser** is a versatile tool designed for parsing and filtering various file formats. Whether it's table data or other formats, FlexiFileParser offers an adaptable solution for handling and displaying data efficiently. The tool allows users to upload files, parse them, and apply keyword-based filtering on the data.
@@ -18,25 +19,82 @@ To run this project, ensure that the following dependencies and tools are instal
 ### Prerequisites
 
 - **Node.js**: Install the latest version from [Node.js official site](https://nodejs.org/).
-- **npm**: Comes bundled with Node.js, but verify it with `npm -v` after installing Node.js.
-- **React**: This project is built using React. You can install React with npm if it’s not already set up:
+- **npm**: Comes bundled with Node.js, but verify it with:
+
   ```bash
-  npx create-react-app flexifileparser ´´´
+  npm -v
+  ```
+
+- **React**: This project is built using React. You can install React with npm if it’s not already set up:
+
+  ```bash
+  npx create-react-app flexifileparser
+  ```
 
 ### Project Dependencies
-The project uses the following key dependencies:
 
-- **next**: A React framework for server-side rendering and static site generation.
-- **react and react-dom**: Core React libraries for building the UI.
-- **tailwindcss**: Utility-first CSS framework for creating fast and responsive designs.
-- **autoprefixer**: Adds vendor prefixes for better browser support in CSS.
-- **postcss**: For transforming styles with JavaScript plugins, required for Tailwind CSS.
-- **multer**: Middleware for handling file uploads.
-- **csv-parser**: Parses CSV files for processing.
-- **xml2js**: Converts XML to JavaScript objects for easier manipulation.
-- **next-connect**: Middleware and routing handler for Next.js API routes.
-- **express**: Web framework for handling API routes.
-- **cors**: Middleware for enabling Cross-Origin Resource Sharing (CORS) in Express.
+To install the project dependencies, run the following command:
+
+```bash
+npm install
+```
 
 
-npm install xlsx pdf-parse
+### Running the Application
+
+1. **Clone the repository**:
+
+   ```bash
+   git clone <repository-url>
+   cd <repository-folder>
+   ```
+
+2. **Install dependencies**:
+
+   ```bash
+   npm install
+   ```
+
+3. **Start the Next.js development server**:
+
+   ```bash
+   npm run dev
+   ```
+
+4. **Run the backend server**:
+
+   Open a second terminal and run the following command:
+
+   ```bash
+   node server.js
+   ```
+
+5. **Access the application**:
+
+   Open your browser and navigate to `http://localhost:3000`.
+
+## Folder Structure
+
+```plaintext
+.
+├── components
+│   ├── FileUpload.js          # Component for file upload
+│   ├── ResultsTable.js        # Component for rendering results table
+├── pages
+│   ├── index.js               # Main page with upload and parse functionality
+├── utils
+│   ├── parseJSON.js           # Utility to parse JSON files
+│   ├── parseXLSX.js           # Utility to parse XLSX files
+├── server.js                  # Express server to handle file uploads and parsing
+└── README.md                  # Project README file
+```
+
+## Future Enhancements
+
+- Add support for additional file formats (e.g., XML).
+- Implement user authentication.
+- Improve UI with more styling and animations.
+
+## License
+
+This project is licensed under the MIT License.
