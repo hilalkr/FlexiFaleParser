@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import FileUpload from '../components/FileUpload';
-import ResultsTable from '../components/ResultsTable';
 import { FaArrowLeft } from 'react-icons/fa';
 import { saveAs } from 'file-saver';
 import * as XLSX from 'xlsx';
@@ -20,23 +19,79 @@ export default function Home() {
   const [visibleRows, setVisibleRows] = useState(10);
   const tableRef = useRef(null);
   const [downloadFormat, setDownloadFormat] = useState('JSON');
+  const [mockApiEndpoint, setMockApiEndpoint] = useState('');
+  const canvasRef = useRef(null);
 
   useEffect(() => {
-    const savedData = localStorage.getItem('parsedData');
-    if (savedData) {
-      const parsedData = JSON.parse(savedData);
-      setResults(parsedData.results);
-      setFilteredResults(parsedData.results);
-      setTableHeaders(parsedData.tableHeaders);
-      setIsParsed(true);
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    const canvasWidth = window.innerWidth;
+    const canvasHeight = window.innerHeight;
+    let animationFrameId;
+
+    canvas.width = canvasWidth;
+    canvas.height = canvasHeight;
+
+ 
+    let particlesArray = [];
+    const numParticles = 150;
+
+    class Particle {
+      constructor() {
+        this.x = Math.random() * canvasWidth;
+        this.y = Math.random() * canvasHeight;
+        this.size = Math.random() * 3 + 1;
+        this.speedX = Math.random() * 3 - 1.5;
+        this.speedY = Math.random() * 3 - 1.5;
+      }
+      update() {
+        this.x += this.speedX;
+        this.y += this.speedY;
+
+        if (this.x > canvasWidth || this.x < 0) {
+          this.x = Math.random() * canvasWidth;
+          this.y = Math.random() * canvasHeight;
+        }
+        if (this.y > canvasHeight || this.y < 0) {
+          this.x = Math.random() * canvasWidth;
+          this.y = Math.random() * canvasHeight;
+        }
+      }
+      draw() {
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.closePath();
+        ctx.fill();
+      }
     }
+
+
+    function initParticles() {
+      particlesArray = [];
+      for (let i = 0; i < numParticles; i++) {
+        particlesArray.push(new Particle());
+      }
+    }
+
+
+    function animateParticles() {
+      ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+      for (let i = 0; i < particlesArray.length; i++) {
+        particlesArray[i].update();
+        particlesArray[i].draw();
+      }
+      animationFrameId = requestAnimationFrame(animateParticles);
+    }
+
+    initParticles();
+    animateParticles();
+
+
+    return () => {
+      cancelAnimationFrame(animationFrameId);
+    };
   }, []);
-
-  useEffect(() => {
-    if (isParsed) {
-      localStorage.setItem('parsedData', JSON.stringify({ results, tableHeaders }));
-    }
-  }, [results, tableHeaders, isParsed]);
 
   const handleFileSelect = (file) => {
     setFile(file);
@@ -46,6 +101,7 @@ export default function Home() {
   const handleJsonFileSelect = (file) => {
     setJsonFile(file);
     setIsParsed(false);
+    setMockApiEndpoint(''); 
   };
 
   const handleParse = async (e) => {
@@ -53,6 +109,9 @@ export default function Home() {
     try {
       const formData = new FormData();
       formData.append('file', file);
+
+      setJsonData(null);
+      setMockApiEndpoint('');
 
       const response = await fetch('http://localhost:5000/api/upload', {
         method: 'POST',
@@ -85,29 +144,25 @@ export default function Home() {
     try {
       const formData = new FormData();
       formData.append('file', jsonFile);
-  
+
       const response = await fetch('http://localhost:5000/api/upload', {
         method: 'POST',
         body: formData,
       });
-  
+
       if (!response.ok) {
         throw new Error('HTTP error! status: ' + response.status);
       }
-  
+
       const data = await response.json();
       setJsonData(data.data);
-      setAlertMessage(`JSON file successfully uploaded! Mock API endpoint: ${data.apiEndpoint}`);
-      setAlertVisible(true);
-      setTimeout(() => {
-        setAlertVisible(false);
-      }, 4000);
+      setMockApiEndpoint(data.apiEndpoint); 
+
     } catch (error) {
       console.error('Error occurred:', error);
       alert('An error occurred during JSON parsing.');
     }
   };
-  
 
   const handleFilter = () => {
     const filtered = results.filter((row) =>
@@ -128,6 +183,7 @@ export default function Home() {
     setJsonFile(null);
     setIsParsed(false);
     setTableHeaders([]);
+    setMockApiEndpoint('');
     localStorage.removeItem('parsedData');
   };
 
@@ -149,8 +205,10 @@ export default function Home() {
       const ws = XLSX.utils.json_to_sheet(filteredResults);
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, 'Data');
-      const xlsxBlob = XLSX.write(wb, { bookType: 'xlsx', type: 'blob' });
-      saveAs(xlsxBlob, 'filtered-data.xlsx');
+
+      const xlsxBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+      const blob = new Blob([xlsxBuffer], { type: 'application/octet-stream' });
+      saveAs(blob, 'filtered-data.xlsx');
     }
   };
 
@@ -175,12 +233,19 @@ export default function Home() {
   }, [filteredResults]);
 
   return (
-    <div className="min-h-screen bg-[linear-gradient(to_bottom_left,#0000ff_0%,#ff00ff_100%)] flex flex-col justify-center items-center p-6">
+    <div className="relative min-h-screen bg-gradient-to-br from-indigo-600 to-purple-500 flex flex-col justify-center items-center p-6">
+      {/* Canvas for flowing data animation */}
+      <canvas ref={canvasRef} className="absolute inset-0 z-0"></canvas>
+
       {alertVisible && (
-        <div className="fixed top-0 left-0 right-0 bg-red-500 text-white p-4 text-center">
+        <div className={`fixed top-0 left-0 right-0 p-4 text-center transition-all duration-300 z-50 ${alertMessage === 'Parsing completed!' ? 'bg-green-500' : 'bg-red-500'} text-white`}>
           {alertMessage}
         </div>
       )}
+
+
+
+
 
       {isParsed && (
         <div className="fixed top-4 left-4 flex items-center space-x-2">
@@ -193,32 +258,52 @@ export default function Home() {
         </div>
       )}
 
-      <div className={`bg-white shadow-md rounded-lg p-8 w-full max-w-4xl ${isParsed ? 'mb-4' : 'mb-12'}`}>
-        <h1 className="text-4xl font-bold text-center mb-8 text-white">Simple Parser Tool</h1>
+<div className="relative z-10 bg-white shadow-xl rounded-xl p-8 w-full max-w-4xl">
+        <h1 className="text-4xl font-bold text-center mb-8 text-gray-800">File Parser Tool</h1>
 
         {!isParsed && (
           <>
-            <div className="mb-4">
-              <FileUpload onFileSelect={handleFileSelect} />
-              <button
-                onClick={handleParse}
-                className="bg-blue-600 hover:bg-blue-800 text-white font-bold py-2 px-6 rounded transition duration-300 mt-4"
-              >
-                Parse File
-              </button>
-            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="mb-6">
+                <h2 className="text-xl font-bold text-center text-gray-700 mb-4">Upload Your File</h2>
+                <div className="bg-gray-100 p-6 rounded-lg shadow-md">
+                  <FileUpload onFileSelect={handleFileSelect} />
+                  <button
+                    onClick={handleParse}
+                    className="bg-blue-600 hover:bg-blue-800 text-white font-bold py-2 px-6 rounded-lg w-full transition duration-300 mt-4"
+                  >
+                    Parse File
+                  </button>
+                </div>
+              </div>
 
-            <div className="mb-4">
-              <h2 className="text-2xl font-bold text-center mb-4">Add JSON File</h2>
-              <FileUpload onFileSelect={handleJsonFileSelect} />
-              <button
-                onClick={handleJsonParse}
-                className="bg-green-600 hover:bg-green-800 text-white font-bold py-2 px-6 rounded transition duration-300 mt-4"
-              >
-                Parse JSON File
-              </button>
+              <div className="mb-6">
+                <h2 className="text-xl font-bold text-center text-gray-700 mb-4">Upload a JSON File</h2>
+                <div className="bg-gray-100 p-6 rounded-lg shadow-md">
+                  <FileUpload onFileSelect={handleJsonFileSelect} />
+                  <button
+                    onClick={handleJsonParse}
+                    className="bg-green-600 hover:bg-green-800 text-white font-bold py-2 px-6 rounded-lg w-full transition duration-300 mt-4"
+                  >
+                    Parse JSON File
+                  </button>
+                </div>
+              </div>
             </div>
           </>
+        )}
+
+        {mockApiEndpoint && (
+          <div className="mt-6 p-4 bg-gray-200 rounded-lg">
+            <h2 className="text-xl font-bold mb-4">Mock API Endpoint</h2>
+            <a
+              href={mockApiEndpoint}
+              target="_blank"
+              className="underline text-blue-600 hover:text-blue-800"
+            >
+              {mockApiEndpoint}
+            </a>
+          </div>
         )}
 
         {isParsed && results.length > 0 && (
@@ -327,16 +412,10 @@ export default function Home() {
           <div className="mt-6 p-4 bg-gray-200 rounded-lg">
             <h2 className="text-xl font-bold mb-4">JSON Data</h2>
             <pre className="bg-gray-100 p-4 rounded overflow-auto">{JSON.stringify(jsonData, null, 2)}</pre>
-            <p className="mt-4 text-black-700">
-              Mock API Endpoint: <a href={alertMessage.split('Mock API endpoint: ')[1]} target="_blank" className="underline">
-              {alertMessage.split('Mock API endpoint: ')[1]}
-              </a>
-            </p>
           </div>
         )}
-
-
       </div>
     </div>
   );
 }
+

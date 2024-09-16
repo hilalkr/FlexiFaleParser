@@ -1,7 +1,7 @@
 const express = require("express");
 const next = require("next");
 const multer = require("multer");
-const csvParser = require("csv-parser"); 
+const csvParser = require("csv-parser");
 const fs = require("fs");
 const path = require("path");
 const cors = require("cors");
@@ -25,11 +25,12 @@ app.prepare().then(() => {
 
 
   server.get("/api/mock-data", (req, res) => {
-    if (Object.keys(mockApiData).length === 0) {
+    if (!mockApiData || Object.keys(mockApiData).length === 0) {
       return res.status(404).json({ message: "No mock data available. Upload a JSON file first." });
     }
     res.status(200).json({ message: "Mock API data", data: mockApiData });
   });
+
 
   server.post("/api/upload", upload.single("file"), (req, res) => {
     const filePath = path.join(__dirname, req.file.path);
@@ -41,12 +42,11 @@ app.prepare().then(() => {
     const fileExt = path.extname(req.file.originalname).toLowerCase();
 
     if (fileExt === ".csv") {
-
       const results = [];
       const headers = [];
 
       fs.createReadStream(filePath)
-        .pipe(csvParser())  
+        .pipe(csvParser())
         .on('headers', (headerList) => {
           headers.push(...headerList);
         })
@@ -64,7 +64,6 @@ app.prepare().then(() => {
         });
 
     } else if (fileExt === ".xlsx") {
-
       fs.readFile(filePath, async (err, data) => {
         if (err) {
           console.error("File reading error:", err);
@@ -87,7 +86,6 @@ app.prepare().then(() => {
       });
 
     } else if (fileExt === ".json") {
-      // Process JSON file and save data for mock API
       fs.readFile(filePath, async (err, data) => {
         if (err) {
           console.error("File reading error:", err);
@@ -95,8 +93,9 @@ app.prepare().then(() => {
         }
 
         try {
-          const parsedData = await parseJSON(data);
-          mockApiData = parsedData;  
+          const parsedData = JSON.parse(data); 
+
+          mockApiData = parsedData;  // Store parsed JSON in mockApiData
 
           res.status(200).json({
             message: "JSON file uploaded and parsed successfully!",
@@ -114,8 +113,14 @@ app.prepare().then(() => {
     }
   });
 
+  server.all("*", (req, res) => {
+    return handle(req, res);
+  });
+
+  
   server.listen(5000, (err) => {
     if (err) throw err;
     console.log("> Ready on http://localhost:5000");
   });
 });
+

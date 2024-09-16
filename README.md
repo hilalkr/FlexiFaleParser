@@ -11,7 +11,10 @@
 - **Scrollable View**: View the first 10 rows of the parsed data, with the ability to scroll through the rest.
 - **File Information**: Display detailed file information in a card-style modal.
 - **Error Handling**: User-friendly error messages and alerts for failed parsing attempts or empty data results.
+## Why were these technologies used?
+- I chose **Node.js** and **Express** for the backend due to their asynchronous, non-blocking nature, which is ideal for handling I/O operations such as file uploads and parsing. Multer was selected as the file upload middleware for its simplicity and efficiency. 
 
+- React and Next.js on the frontend provide a reactive interface, enabling fast updates when new data is parsed or when users interact with the table. Tailwind CSS was used to ensure a clean, modern design without the overhead of custom styling. The use of streaming libraries like csv-parser ensures that even large CSV files are handled efficiently.
 ## Project Requirements
 
 To run this project, ensure that the following dependencies and tools are installed:
@@ -77,23 +80,34 @@ npm install
 
 ```plaintext
 .
+├── .next
 ├── components
-│   ├── FileUpload.js          # Component for file upload
-│   ├── ResultsTable.js        # Component for rendering results table
+│   ├── FileUpload.js
+│   ├── KeywordInput.js
+│   ├── ResultsTable.js
 ├── pages
-│   ├── index.js               # Main page with upload and parse functionality
+│   ├── api
+│   │   ├── parse.js
+│   ├── _app.js
+│   ├── index.js
+├── styles
+│   └── global.css
 ├── utils
-│   ├── parseJSON.js           # Utility to parse JSON files
-│   ├── parseXLSX.js           # Utility to parse XLSX files
-├── server.js                  # Express server to handle file uploads and parsing
-└── README.md                  # Project README file
+│   ├── parseCSV.js
+│   ├── parseJSON.js
+│   ├── parseXLSX.js
+│   ├── parseXML.js
+├── .gitignore
+├── package-lock.json
+├── package.json
+├── postcss.config.js
+├── README.md
+├── server.js
+├── tailwind.config.js
+                 
 ```
 
-## Future Enhancements
 
-- Add support for additional file formats (e.g., XML).
-- Implement user authentication.
-- Improve UI with more styling and animations.
 
 ## License
 
